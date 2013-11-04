@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Lecto</string>
+    <string name="action_settings">Settings</string>
+    <string name="no_reminders">No Reminders Yet.</string>
+    <string name="title">Title</string>
+    <string name="location">Location</string>
+    <string name="date">Reminder Date</string>
+	<string name="time">Reminder Time</string>
+	<string name="confirm">Save</string>
+	<string name="menu_insert">Add Reminder</string>
+	
+</resources>
