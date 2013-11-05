@@ -3,23 +3,23 @@ package telerik.academy.lecto;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
-import android.app.Activity;
-import android.app.DatePickerDialog;
-import android.app.Dialog;
-import android.app.TimePickerDialog;
+import android.annotation.SuppressLint;
+import android.app.DatePickerDialog.OnDateSetListener;
+import android.app.TimePickerDialog.OnTimeSetListener;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.FragmentActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.TimePicker;
 
-public class ReminderEditActivity extends Activity {
+public class ReminderEditActivity extends FragmentActivity implements
+		OnDateSetListener, OnTimeSetListener {
 
 	private static final String DATE_FORMAT = "yyyy-MM-dd";
 	private static final String TIME_FORMAT = "kk:mm";
-	private static final int DATE_PICKER_DIALOG = 0;
-	private static final int TIME_PICKER_DIALOG = 1;
 
 	private Calendar mCalendar;
 	private Button mDateButton;
@@ -46,18 +46,16 @@ public class ReminderEditActivity extends Activity {
 
 	private void registerButtonListenersAndSetDefaultText() {
 		mDateButton.setOnClickListener(new View.OnClickListener() {
-			@SuppressWarnings("deprecation")
 			@Override
 			public void onClick(View view) {
-				showDialog(DATE_PICKER_DIALOG);
+				showDatePickerDialog();
 			}
 		});
 
 		mTimeButton.setOnClickListener(new View.OnClickListener() {
-			@SuppressWarnings("deprecation")
 			@Override
 			public void onClick(View view) {
-				showDialog(TIME_PICKER_DIALOG);
+				showTimePickerDialog();
 			}
 		});
 
@@ -65,62 +63,45 @@ public class ReminderEditActivity extends Activity {
 		updateTimeButtonText();
 	}
 
-	@SuppressWarnings("deprecation")
-	@Override
-	protected Dialog onCreateDialog(int id) {
-		switch (id) {
-		case DATE_PICKER_DIALOG:
-			return showDatePicker();
-		case TIME_PICKER_DIALOG:
-			return showTimePicker();
-		}
-
-		return super.onCreateDialog(id);
-	}
-
-	private DatePickerDialog showDatePicker() {
-		DatePickerDialog datePicker = new DatePickerDialog(
-				ReminderEditActivity.this,
-				new DatePickerDialog.OnDateSetListener() {
-					@Override
-					public void onDateSet(DatePicker view, int year, int month,
-							int dayOfMonth) {
-						mCalendar.set(Calendar.YEAR, year);
-						mCalendar.set(Calendar.MONTH, month);
-						mCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-						updateDateButtonText();
-					}
-				}, mCalendar.get(Calendar.YEAR), mCalendar.get(Calendar.MONTH),
-				mCalendar.get(Calendar.DAY_OF_MONTH));
-
-		return datePicker;
-	}
-
+	@SuppressLint("SimpleDateFormat")
 	private void updateDateButtonText() {
 		SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT);
 		String dateForButton = dateFormat.format(mCalendar.getTime());
 		mDateButton.setText(dateForButton);
 	}
 
-	private TimePickerDialog showTimePicker() {
-		TimePickerDialog timePicker = new TimePickerDialog(this,
-				new TimePickerDialog.OnTimeSetListener() {
-					@Override
-					public void onTimeSet(TimePicker view, int hourOfDay,
-							int minute) {
-						mCalendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
-						mCalendar.set(Calendar.MINUTE, minute);
-						updateTimeButtonText();
-					}
-				}, mCalendar.get(Calendar.HOUR_OF_DAY),
-				mCalendar.get(Calendar.MINUTE), true);
-		
-		return timePicker;
-	}
-
+	@SuppressLint("SimpleDateFormat")
 	private void updateTimeButtonText() {
 		SimpleDateFormat dateFormat = new SimpleDateFormat(TIME_FORMAT);
 		String timeForButton = dateFormat.format(mCalendar.getTime());
 		mTimeButton.setText(timeForButton);
+	}
+
+	public void showDatePickerDialog() {
+		DialogFragment dialogFragment = new DatePickerFragment();
+		dialogFragment.show(getSupportFragmentManager(), "datePicker");
+	}
+
+	public void showTimePickerDialog() {
+		DialogFragment dialogFragment = new TimePickerFragment();
+		dialogFragment.show(getSupportFragmentManager(), "timePicker");
+	}
+
+	@Override
+	public void onDateSet(DatePicker view, int year, int monthOfYear,
+			int dayOfMonth) {
+		mCalendar.set(Calendar.YEAR, year);
+		mCalendar.set(Calendar.MONTH, monthOfYear);
+		mCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+
+		updateDateButtonText();
+	}
+
+	@Override
+	public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+		mCalendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
+		mCalendar.set(Calendar.MINUTE, minute);
+
+		updateTimeButtonText();
 	}
 }
