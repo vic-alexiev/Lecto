@@ -51,11 +51,12 @@ public final class R {
         public static final int app_name=0x7f050000;
         public static final int confirm=0x7f050007;
         public static final int date=0x7f050005;
-        public static final int lecture_saved_message=0x7f05000a;
         public static final int location=0x7f050004;
         public static final int menu_delete=0x7f050009;
         public static final int menu_insert=0x7f050008;
         public static final int no_reminders=0x7f050002;
+        public static final int reminder_error_message=0x7f05000b;
+        public static final int reminder_saved_message=0x7f05000a;
         public static final int time=0x7f050006;
         public static final int title=0x7f050003;
     }

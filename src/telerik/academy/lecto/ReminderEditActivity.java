@@ -5,13 +5,18 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
+import telerik.academy.lecto.contentprovider.ReminderContentProvider;
+import telerik.academy.lecto.database.ReminderTable;
 import android.annotation.SuppressLint;
 import android.app.DatePickerDialog.OnDateSetListener;
 import android.app.TimePickerDialog.OnTimeSetListener;
+import android.content.ContentValues;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -27,20 +32,17 @@ public class ReminderEditActivity extends FragmentActivity implements
 	private static final String DATE_FORMAT = "yyyy-MM-dd";
 	private static final String TIME_FORMAT = "kk:mm";
 
-	private RemindersDbAdapter mDbHelper;
 	private EditText mTitleText;
 	private EditText mLocationText;
 	private Button mConfirmButton;
 	private Calendar mCalendar;
 	private Button mDateButton;
 	private Button mTimeButton;
-	private Long mRowId;
+	private Uri mReminderUri;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
-		mDbHelper = new RemindersDbAdapter(this);
 
 		setContentView(R.layout.reminder_edit);
 
@@ -52,10 +54,57 @@ public class ReminderEditActivity extends FragmentActivity implements
 
 		mConfirmButton = (Button) findViewById(R.id.confirm);
 
-		mRowId = savedInstanceState != null ? savedInstanceState
-				.getLong(RemindersDbAdapter.KEY_ROWID) : null;
+		Bundle extras = getIntent().getExtras();
+
+		// check from the saved Instance
+		mReminderUri = (savedInstanceState == null) ? null
+				: (Uri) savedInstanceState
+						.getParcelable(ReminderContentProvider.CONTENT_ITEM_TYPE);
+
+		// Or passed from the other activity
+		if (extras != null) {
+			mReminderUri = extras
+					.getParcelable(ReminderContentProvider.CONTENT_ITEM_TYPE);
+
+			populateFields(mReminderUri);
+		}
 
 		registerButtonListenersAndSetDefaultText();
+	}
+
+	@SuppressLint("SimpleDateFormat")
+	private void populateFields(Uri uri) {
+
+		String[] projection = { ReminderTable.KEY_TITLE,
+				ReminderTable.KEY_LOCATION, ReminderTable.KEY_DATE_TIME };
+		Cursor cursor = getContentResolver().query(uri, projection, null, null,
+				null);
+		if (cursor != null) {
+			cursor.moveToFirst();
+			mTitleText.setText(cursor.getString(cursor
+					.getColumnIndexOrThrow(ReminderTable.KEY_TITLE)));
+
+			mLocationText.setText(cursor.getString(cursor
+					.getColumnIndexOrThrow(ReminderTable.KEY_LOCATION)));
+
+			SimpleDateFormat dateTimeFormat = new SimpleDateFormat(
+					DATE_TIME_FORMAT);
+			Date date = null;
+			try {
+				String dateString = cursor.getString(cursor
+						.getColumnIndexOrThrow(ReminderTable.KEY_DATE_TIME));
+				date = dateTimeFormat.parse(dateString);
+				mCalendar.setTime(date);
+			} catch (ParseException e) {
+				Log.e("ReminderEditActivity", e.getMessage(), e);
+			}
+
+			// always close the cursor
+			cursor.close();
+		}
+
+		updateDateButtonText();
+		updateTimeButtonText();
 	}
 
 	private void registerButtonListenersAndSetDefaultText() {
@@ -75,20 +124,15 @@ public class ReminderEditActivity extends FragmentActivity implements
 
 		mConfirmButton.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View view) {
-				saveState();
-
-				// This result code (member of the Activity class)
-				// can be inspected on ReminderListActivity
-				// in the onActivityResult() method.
-				setResult(RESULT_OK);
-				Toast.makeText(ReminderEditActivity.this,
-						getString(R.string.lecture_saved_message),
-						Toast.LENGTH_SHORT).show();
-
-				// close ReminderEditActivity and return the specified
-				// result code (RESULT_OK) to the caller -
-				// ReminderListActivity's createReminder() method
-				finish();
+				if (TextUtils.isEmpty(mTitleText.getText().toString())
+						|| TextUtils
+								.isEmpty(mLocationText.getText().toString())) {
+					makeErrorToast();
+				} else {
+					setResult(RESULT_OK);
+					makeSuccessToast();
+					finish();
+				}
 			}
 		});
 
@@ -96,69 +140,26 @@ public class ReminderEditActivity extends FragmentActivity implements
 		updateTimeButtonText();
 	}
 
-	@Override
-	protected void onPause() {
-		super.onPause();
-		// Before the activity is shut down or 
-		// when it’s paused, the database is closed.
-		mDbHelper.close();
+	private void showDatePickerDialog() {
+		DialogFragment dialogFragment = new DatePickerFragment();
+		dialogFragment.show(getSupportFragmentManager(), "datePicker");
 	}
 
-	@Override
-	protected void onResume() {
-		super.onResume();
-		mDbHelper.open();
-		setRowIdFromIntent();
-		populateFields();
+	private void showTimePickerDialog() {
+		DialogFragment dialogFragment = new TimePickerFragment();
+		dialogFragment.show(getSupportFragmentManager(), "timePicker");
 	}
 
-	private void setRowIdFromIntent() {
-		if (mRowId == null) {
-			Bundle extras = getIntent().getExtras();
-			mRowId = extras != null ? extras
-					.getLong(RemindersDbAdapter.KEY_ROWID) : null;
-		}
+	private void makeErrorToast() {
+		Toast.makeText(ReminderEditActivity.this,
+				getString(R.string.reminder_error_message), Toast.LENGTH_LONG)
+				.show();
 	}
 
-	@SuppressWarnings("deprecation")
-	@SuppressLint("SimpleDateFormat")
-	private void populateFields() {
-		if (mRowId != null) {
-			Cursor reminder = mDbHelper.fetchReminder(mRowId);
-			startManagingCursor(reminder);
-			mTitleText.setText(reminder.getString(reminder
-					.getColumnIndexOrThrow(RemindersDbAdapter.KEY_TITLE)));
-			mLocationText.setText(reminder.getString(reminder
-					.getColumnIndexOrThrow(RemindersDbAdapter.KEY_LOCATION)));
-			SimpleDateFormat dateTimeFormat = new SimpleDateFormat(
-					DATE_TIME_FORMAT);
-			Date date = null;
-			try {
-				String dateString = reminder
-						.getString(reminder
-								.getColumnIndexOrThrow(RemindersDbAdapter.KEY_DATE_TIME));
-				date = dateTimeFormat.parse(dateString);
-				mCalendar.setTime(date);
-			} catch (ParseException e) {
-				Log.e("ReminderEditActivity", e.getMessage(), e);
-			}
-		}
-
-		updateDateButtonText();
-		updateTimeButtonText();
-	}
-
-	@Override
-	protected void onSaveInstanceState(Bundle outState) {
-		super.onSaveInstanceState(outState);
-		
-		/* The onSaveInstanceState() method is called so that 
-		 * you may retrieve and store activity-level instance 
-		 * states in a Bundle. This method is called before 
-		 * the activity is killed so that when the activity 
-		 * comes back in the future, it can be restored to 
-		 * a known state (as done in the onResume() method).*/
-		outState.putLong(RemindersDbAdapter.KEY_ROWID, mRowId);
+	private void makeSuccessToast() {
+		Toast.makeText(ReminderEditActivity.this,
+				getString(R.string.reminder_saved_message), Toast.LENGTH_LONG)
+				.show();
 	}
 
 	@SuppressLint("SimpleDateFormat")
@@ -173,16 +174,6 @@ public class ReminderEditActivity extends FragmentActivity implements
 		SimpleDateFormat dateFormat = new SimpleDateFormat(TIME_FORMAT);
 		String timeForButton = dateFormat.format(mCalendar.getTime());
 		mTimeButton.setText(timeForButton);
-	}
-
-	public void showDatePickerDialog() {
-		DialogFragment dialogFragment = new DatePickerFragment();
-		dialogFragment.show(getSupportFragmentManager(), "datePicker");
-	}
-
-	public void showTimePickerDialog() {
-		DialogFragment dialogFragment = new TimePickerFragment();
-		dialogFragment.show(getSupportFragmentManager(), "timePicker");
 	}
 
 	@Override
@@ -203,22 +194,51 @@ public class ReminderEditActivity extends FragmentActivity implements
 		updateTimeButtonText();
 	}
 
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		super.onSaveInstanceState(outState);
+		saveState();
+		/*
+		 * The onSaveInstanceState() method is called so that you may retrieve
+		 * and store activity-level instance states in a Bundle. This method is
+		 * called before the activity is killed so that when the activity comes
+		 * back in the future, it can be restored to a known state (as done in
+		 * the onResume() method).
+		 */
+		outState.putParcelable(ReminderContentProvider.CONTENT_ITEM_TYPE,
+				mReminderUri);
+	}
+
 	@SuppressLint("SimpleDateFormat")
 	private void saveState() {
 		String title = mTitleText.getText().toString();
 		String location = mLocationText.getText().toString();
 
+		if (title.length() == 0 || location.length() == 0) {
+			return;
+		}
+
 		SimpleDateFormat dateTimeFormat = new SimpleDateFormat(DATE_TIME_FORMAT);
 		String reminderDateTime = dateTimeFormat.format(mCalendar.getTime());
 
-		if (mRowId == null) {
-			long id = mDbHelper.createReminder(title, location,
-					reminderDateTime);
-			if (id > 0) {
-				mRowId = id;
-			}
+		ContentValues values = new ContentValues();
+		values.put(ReminderTable.KEY_TITLE, title);
+		values.put(ReminderTable.KEY_LOCATION, location);
+		values.put(ReminderTable.KEY_DATE_TIME, reminderDateTime);
+
+		if (mReminderUri == null) {
+			// New reminder
+			mReminderUri = getContentResolver().insert(
+					ReminderContentProvider.CONTENT_URI, values);
 		} else {
-			mDbHelper.updateReminder(mRowId, title, location, reminderDateTime);
+			// Update reminder
+			getContentResolver().update(mReminderUri, values, null, null);
 		}
+	}
+
+	@Override
+	protected void onPause() {
+		super.onPause();
+		saveState();
 	}
 }

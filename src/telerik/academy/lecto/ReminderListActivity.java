@@ -1,8 +1,14 @@
 package telerik.academy.lecto;
 
+import telerik.academy.lecto.contentprovider.ReminderContentProvider;
+import telerik.academy.lecto.database.ReminderTable;
 import android.app.ListActivity;
+import android.app.LoaderManager;
+import android.content.CursorLoader;
 import android.content.Intent;
+import android.content.Loader;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -14,47 +20,33 @@ import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 
-public class ReminderListActivity extends ListActivity {
+public class ReminderListActivity extends ListActivity implements
+		LoaderManager.LoaderCallbacks<Cursor> {
 
-	private static final int ACTIVITY_CREATE = 0;
-	private static final int ACTIVITY_EDIT = 1;
-
-	private RemindersDbAdapter mDbHelper;
+	private SimpleCursorAdapter mAdapter;
 
 	/** Called when the activity is first created. */
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.reminder_list);
-
-		// String[] items = new String[] { "C# I", "C# II", "JavaScript I",
-		// "Databases" };
-		// ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
-		// R.layout.reminder_row, R.id.reminder_text, items);
-		// setListAdapter(adapter);
-
-		mDbHelper = new RemindersDbAdapter(this);
-		mDbHelper.open();
 		fillData();
 
 		registerForContextMenu(getListView());
 	}
 
-	@SuppressWarnings("deprecation")
 	private void fillData() {
-		Cursor remindersCursor = mDbHelper.fetchAllReminders();
-		startManagingCursor(remindersCursor);
+
 		// Create an array to specify the fields we want (only the TITLE)
-		String[] from = new String[] { RemindersDbAdapter.KEY_TITLE };
+		String[] from = new String[] { ReminderTable.KEY_TITLE };
 		// and an array of the fields we want to bind in the view
 		int[] to = new int[] { R.id.reminder_text };
-		// Now create a simple cursor adapter and set it to display
-		// maps columns from the Cursor to the TextViews as defined 
-		// in the layout XML file
-		SimpleCursorAdapter reminders = new SimpleCursorAdapter(this,
-				R.layout.reminder_row, remindersCursor, from, to);
+
+		getLoaderManager().initLoader(0, null, this);
+		mAdapter = new SimpleCursorAdapter(this, R.layout.reminder_row, null,
+				from, to, 0);
 		// inform the list view where to find its data
-		setListAdapter(reminders);
+		setListAdapter(mAdapter);
 	}
 
 	@Override
@@ -63,9 +55,11 @@ public class ReminderListActivity extends ListActivity {
 		super.onListItemClick(listView, view, position, id);
 
 		Intent intent = new Intent(this, ReminderEditActivity.class);
+
+		Uri todoUri = Uri.parse(ReminderContentProvider.CONTENT_URI + "/" + id);
 		// place the ID of the task to be edited into the intent
-		intent.putExtra(RemindersDbAdapter.KEY_ROWID, id);
-		startActivityForResult(intent, ACTIVITY_EDIT);
+		intent.putExtra(ReminderContentProvider.CONTENT_ITEM_TYPE, todoUri);
+		startActivity(intent);
 	}
 
 	@Override
@@ -84,7 +78,10 @@ public class ReminderListActivity extends ListActivity {
 			// Delete the lecture
 			AdapterContextMenuInfo info = (AdapterContextMenuInfo) item
 					.getMenuInfo();
-			mDbHelper.deleteReminder(info.id);
+
+			Uri uri = Uri.parse(ReminderContentProvider.CONTENT_URI + "/"
+					+ info.id);
+			getContentResolver().delete(uri, null, null);
 			fillData();
 			return true;
 		}
@@ -116,14 +113,28 @@ public class ReminderListActivity extends ListActivity {
 
 	private void createReminder() {
 		Intent intent = new Intent(this, ReminderEditActivity.class);
-		startActivityForResult(intent, ACTIVITY_CREATE);
+		startActivity(intent);
+	}
+
+	// creates a new loader after the initLoader () call
+	@Override
+	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+		String[] projection = { ReminderTable.KEY_ROWID,
+				ReminderTable.KEY_TITLE };
+		CursorLoader cursorLoader = new CursorLoader(this,
+				ReminderContentProvider.CONTENT_URI, projection, null, null,
+				null);
+		return cursorLoader;
 	}
 
 	@Override
-	protected void onActivityResult(int requestCode, int resultCode,
-			Intent intent) {
-		super.onActivityResult(requestCode, resultCode, intent);
-		// Reload the list here
-		fillData();
+	public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+		mAdapter.swapCursor(data);
+	}
+
+	@Override
+	public void onLoaderReset(Loader<Cursor> loader) {
+		// data is not available anymore, delete reference
+		mAdapter.swapCursor(null);
 	}
 }

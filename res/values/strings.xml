@@ -11,6 +11,7 @@
 	<string name="confirm">Save</string>
 	<string name="menu_insert">Add Reminder</string>
 	<string name="menu_delete">Delete Reminder</string>
-	<string name="lecture_saved_message">Lecture saved.</string>
+	<string name="reminder_saved_message">Reminder saved.</string>
+	<string name="reminder_error_message">Title and location cannot be empty.</string>
 	
 </resources>
