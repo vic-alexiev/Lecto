@@ -99,6 +99,8 @@ public class ReminderEditActivity extends FragmentActivity implements
 	@Override
 	protected void onPause() {
 		super.onPause();
+		// Before the activity is shut down or 
+		// when it’s paused, the database is closed.
 		mDbHelper.close();
 	}
 
@@ -118,6 +120,7 @@ public class ReminderEditActivity extends FragmentActivity implements
 		}
 	}
 
+	@SuppressWarnings("deprecation")
 	@SuppressLint("SimpleDateFormat")
 	private void populateFields() {
 		if (mRowId != null) {
@@ -148,6 +151,13 @@ public class ReminderEditActivity extends FragmentActivity implements
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
+		
+		/* The onSaveInstanceState() method is called so that 
+		 * you may retrieve and store activity-level instance 
+		 * states in a Bundle. This method is called before 
+		 * the activity is killed so that when the activity 
+		 * comes back in the future, it can be restored to 
+		 * a known state (as done in the onResume() method).*/
 		outState.putLong(RemindersDbAdapter.KEY_ROWID, mRowId);
 	}
 

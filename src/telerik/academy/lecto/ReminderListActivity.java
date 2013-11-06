@@ -49,8 +49,11 @@ public class ReminderListActivity extends ListActivity {
 		// and an array of the fields we want to bind in the view
 		int[] to = new int[] { R.id.reminder_text };
 		// Now create a simple cursor adapter and set it to display
+		// maps columns from the Cursor to the TextViews as defined 
+		// in the layout XML file
 		SimpleCursorAdapter reminders = new SimpleCursorAdapter(this,
 				R.layout.reminder_row, remindersCursor, from, to);
+		// inform the list view where to find its data
 		setListAdapter(reminders);
 	}
 
@@ -60,6 +63,7 @@ public class ReminderListActivity extends ListActivity {
 		super.onListItemClick(listView, view, position, id);
 
 		Intent intent = new Intent(this, ReminderEditActivity.class);
+		// place the ID of the task to be edited into the intent
 		intent.putExtra(RemindersDbAdapter.KEY_ROWID, id);
 		startActivityForResult(intent, ACTIVITY_EDIT);
 	}
