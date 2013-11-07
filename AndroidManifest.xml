@@ -31,6 +31,13 @@
       android:name=".contentprovider.ReminderContentProvider"
       android:authorities="telerik.academy.lecto.contentprovider" >
    </provider>
+   <receiver android:name=".reminder.OnAlarmReceiver" />
+   <receiver android:name=".reminder.OnBootReceiver">
+<intent-filter>
+<action android:name="android.intent.action.BOOT_COMPLETED" />
+</intent-filter>
+</receiver>
+   <service android:name=".reminder.ReminderService" />
     </application>
 
 </manifest>

@@ -7,6 +7,7 @@ import java.util.Date;
 
 import telerik.academy.lecto.contentprovider.ReminderContentProvider;
 import telerik.academy.lecto.database.ReminderTable;
+import telerik.academy.lecto.reminder.ReminderManager;
 import android.annotation.SuppressLint;
 import android.app.DatePickerDialog.OnDateSetListener;
 import android.app.TimePickerDialog.OnTimeSetListener;
@@ -234,6 +235,9 @@ public class ReminderEditActivity extends FragmentActivity implements
 			// Update reminder
 			getContentResolver().update(mReminderUri, values, null, null);
 		}
+		
+		String rowId = mReminderUri.getLastPathSegment();
+		new ReminderManager(this).setReminder(Long.parseLong(rowId) , mCalendar);
 	}
 
 	@Override
