@@ -13,5 +13,7 @@
 	<string name="menu_delete">Delete Reminder</string>
 	<string name="reminder_saved_message">Reminder saved.</string>
 	<string name="reminder_error_message">Title and location cannot be empty.</string>
+	<string name="notify_new_lecture_message">A lecture is starting.</string>
+	<string name="notifiy_new_lecture_title">Lecture Reminder</string>
 	
 </resources>

@@ -55,6 +55,8 @@ public final class R {
         public static final int menu_delete=0x7f050009;
         public static final int menu_insert=0x7f050008;
         public static final int no_reminders=0x7f050002;
+        public static final int notifiy_new_lecture_title=0x7f05000d;
+        public static final int notify_new_lecture_message=0x7f05000c;
         public static final int reminder_error_message=0x7f05000b;
         public static final int reminder_saved_message=0x7f05000a;
         public static final int time=0x7f050006;

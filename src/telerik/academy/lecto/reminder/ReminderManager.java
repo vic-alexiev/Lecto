@@ -19,9 +19,9 @@ public class ReminderManager {
 				.getSystemService(Context.ALARM_SERVICE);
 	}
 
-	public void setReminder(Long taskId, Calendar when) {
+	public void setReminder(Long lectureId, Calendar when) {
 		Intent intent = new Intent(mContext, OnAlarmReceiver.class);
-		intent.putExtra(ReminderTable.KEY_ROWID, (long) taskId);
+		intent.putExtra(ReminderTable.KEY_ROWID, (long) lectureId);
 		// the pending intent to be broadcast by the AlarmManager
 		// FLAG_ONE_SHOT indicates that this PendingIntent can only be used once
 		PendingIntent pendingIntent = PendingIntent.getBroadcast(mContext, 0,

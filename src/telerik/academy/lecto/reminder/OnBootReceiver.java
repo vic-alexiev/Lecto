@@ -21,11 +21,10 @@ public class OnBootReceiver extends BroadcastReceiver {
 	@Override
 	public void onReceive(Context context, Intent intent) {
 
-		ReminderManager reminderManager = new ReminderManager(context);
-
 		String[] projection = { ReminderTable.KEY_TITLE,
 				ReminderTable.KEY_LOCATION, ReminderTable.KEY_DATE_TIME };
-		Cursor cursor = context.getContentResolver().query(
+		ReminderContentProvider contentProvider = new ReminderContentProvider();
+		Cursor cursor = contentProvider.query(
 				ReminderContentProvider.CONTENT_URI, projection, null, null,
 				null);
 		if (cursor != null) {
@@ -34,10 +33,10 @@ public class OnBootReceiver extends BroadcastReceiver {
 					.getColumnIndex(ReminderTable.KEY_ROWID);
 			int dateTimeColumnIndex = cursor
 					.getColumnIndex(ReminderTable.KEY_DATE_TIME);
+
+			ReminderManager reminderManager = new ReminderManager(context);
+
 			while (cursor.isAfterLast() == false) {
-				Log.d("OnBootReceiver", "Adding alarm from boot.");
-				Log.d("OnBootReceiver", "Row Id Column Index - "
-						+ rowIdColumnIndex);
 
 				Long rowId = cursor.getLong(rowIdColumnIndex);
 				String dateTime = cursor.getString(dateTimeColumnIndex);

@@ -56,9 +56,9 @@ public class ReminderListActivity extends ListActivity implements
 
 		Intent intent = new Intent(this, ReminderEditActivity.class);
 
-		Uri todoUri = Uri.parse(ReminderContentProvider.CONTENT_URI + "/" + id);
+		Uri reminderUri = Uri.parse(ReminderContentProvider.CONTENT_URI + "/" + id);
 		// place the ID of the task to be edited into the intent
-		intent.putExtra(ReminderContentProvider.CONTENT_ITEM_TYPE, todoUri);
+		intent.putExtra(ReminderContentProvider.CONTENT_ITEM_TYPE, reminderUri);
 		startActivity(intent);
 	}
 
