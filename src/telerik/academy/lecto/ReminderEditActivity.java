@@ -237,7 +237,7 @@ public class ReminderEditActivity extends FragmentActivity implements
 		}
 		
 		String rowId = mReminderUri.getLastPathSegment();
-		new ReminderManager(this).setReminder(Long.parseLong(rowId) , mCalendar);
+		new ReminderManager(this).setReminder(Long.parseLong(rowId) , (Calendar)mCalendar);
 	}
 
 	@Override

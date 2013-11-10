@@ -38,7 +38,8 @@ public class ReminderService extends WakeReminderIntentService {
 				.setContentIntent(pendingIntent)
 				.setContentTitle(getString(R.string.notifiy_new_lecture_title))
 				.setContentText(getString(R.string.notify_new_lecture_message))
-				.setSmallIcon(android.R.drawable.stat_sys_warning).build();
+				.setSmallIcon(android.R.drawable.stat_sys_warning)
+				.setWhen(System.currentTimeMillis()).build();
 
 		notification.defaults |= Notification.DEFAULT_SOUND;
 		notification.flags |= Notification.FLAG_AUTO_CANCEL;

@@ -27,6 +27,7 @@
         </activity>
         <activity android:name="telerik.academy.lecto.ReminderEditActivity" 
         android:label="@string/app_name" />
+        <activity android:name=".preferences.LecturePreferences" android:label="@string/app_name" />
         <provider
       android:name=".contentprovider.ReminderContentProvider"
       android:authorities="telerik.academy.lecto.contentprovider" >

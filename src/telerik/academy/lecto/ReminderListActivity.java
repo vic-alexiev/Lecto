@@ -2,6 +2,7 @@ package telerik.academy.lecto;
 
 import telerik.academy.lecto.contentprovider.ReminderContentProvider;
 import telerik.academy.lecto.database.ReminderTable;
+import telerik.academy.lecto.preferences.LecturePreferences;
 import android.app.ListActivity;
 import android.app.LoaderManager;
 import android.content.CursorLoader;
@@ -56,7 +57,8 @@ public class ReminderListActivity extends ListActivity implements
 
 		Intent intent = new Intent(this, ReminderEditActivity.class);
 
-		Uri reminderUri = Uri.parse(ReminderContentProvider.CONTENT_URI + "/" + id);
+		Uri reminderUri = Uri.parse(ReminderContentProvider.CONTENT_URI + "/"
+				+ id);
 		// place the ID of the task to be edited into the intent
 		intent.putExtra(ReminderContentProvider.CONTENT_ITEM_TYPE, reminderUri);
 		startActivity(intent);
@@ -105,6 +107,10 @@ public class ReminderListActivity extends ListActivity implements
 		switch (item.getItemId()) {
 		case R.id.menu_insert:
 			createReminder();
+			return true;
+		case R.id.menu_settings:
+			Intent intent = new Intent(this, LecturePreferences.class);
+			startActivity(intent);
 			return true;
 		}
 
