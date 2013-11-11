@@ -12,10 +12,24 @@ public class LecturePreferences extends PreferenceActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
-		addPreferencesFromResource(R.xml.lecture_preferences);
-		EditTextPreference timeDefault = (EditTextPreference) findPreference(getString(R.string.pref_default_time_from_now_key));
-		timeDefault.getEditText().setKeyListener(
-				DigitsKeyListener.getInstance());
+
+		getFragmentManager()
+				.beginTransaction()
+				.replace(android.R.id.content, new LecturePreferencesFragment())
+				.commit();
+	}
+
+	public static class LecturePreferencesFragment extends PreferenceFragment {
+
+		@Override
+		public void onCreate(Bundle savedInstanceState) {
+			super.onCreate(savedInstanceState);
+			addPreferencesFromResource(R.xml.lecture_preferences);
+
+			EditTextPreference timeDefault = (EditTextPreference) findPreference(getString(R.string.pref_default_time_from_now_key));
+
+			timeDefault.getEditText().setKeyListener(
+					DigitsKeyListener.getInstance());
+		}
 	}
 }

@@ -53,12 +53,12 @@ public final class R {
         public static final int confirm=0x7f060007;
         public static final int date=0x7f060005;
         public static final int location=0x7f060004;
-        public static final int menu_delete=0x7f060009;
+        public static final int menu_delete=0x7f06000a;
         public static final int menu_insert=0x7f060008;
-        public static final int menu_settings=0x7f06000e;
+        public static final int menu_settings=0x7f060009;
         public static final int no_reminders=0x7f060002;
-        public static final int notifiy_new_lecture_title=0x7f06000d;
-        public static final int notify_new_lecture_message=0x7f06000c;
+        public static final int notifiy_new_lecture_title=0x7f06000e;
+        public static final int notify_new_lecture_message=0x7f06000d;
         public static final int pref_category_datetime_key=0x7f060016;
         public static final int pref_category_datetime_title=0x7f060017;
         /**  Preferences 
@@ -75,8 +75,8 @@ public final class R {
         public static final int pref_lecture_title_message=0x7f060013;
         public static final int pref_lecture_title_summary=0x7f060014;
         public static final int pref_lecture_title_title=0x7f060015;
-        public static final int reminder_error_message=0x7f06000b;
-        public static final int reminder_saved_message=0x7f06000a;
+        public static final int reminder_error_message=0x7f06000c;
+        public static final int reminder_saved_message=0x7f06000b;
         public static final int time=0x7f060006;
         public static final int title=0x7f060003;
     }

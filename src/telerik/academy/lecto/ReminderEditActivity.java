@@ -12,9 +12,11 @@ import android.annotation.SuppressLint;
 import android.app.DatePickerDialog.OnDateSetListener;
 import android.app.TimePickerDialog.OnTimeSetListener;
 import android.content.ContentValues;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
 import android.text.TextUtils;
@@ -66,9 +68,9 @@ public class ReminderEditActivity extends FragmentActivity implements
 		if (extras != null) {
 			mReminderUri = extras
 					.getParcelable(ReminderContentProvider.CONTENT_ITEM_TYPE);
-
-			populateFields(mReminderUri);
 		}
+
+		populateFields(mReminderUri);
 
 		registerButtonListenersAndSetDefaultText();
 	}
@@ -76,32 +78,48 @@ public class ReminderEditActivity extends FragmentActivity implements
 	@SuppressLint("SimpleDateFormat")
 	private void populateFields(Uri uri) {
 
-		String[] projection = { ReminderTable.KEY_TITLE,
-				ReminderTable.KEY_LOCATION, ReminderTable.KEY_DATE_TIME };
-		Cursor cursor = getContentResolver().query(uri, projection, null, null,
-				null);
-		if (cursor != null) {
-			cursor.moveToFirst();
-			mTitleText.setText(cursor.getString(cursor
-					.getColumnIndexOrThrow(ReminderTable.KEY_TITLE)));
+		if (uri != null) {
+			// edit an existing reminder
+			String[] projection = { ReminderTable.KEY_TITLE,
+					ReminderTable.KEY_LOCATION, ReminderTable.KEY_DATE_TIME };
+			Cursor cursor = getContentResolver().query(uri, projection, null,
+					null, null);
+			if (cursor != null) {
+				cursor.moveToFirst();
+				mTitleText.setText(cursor.getString(cursor
+						.getColumnIndexOrThrow(ReminderTable.KEY_TITLE)));
 
-			mLocationText.setText(cursor.getString(cursor
-					.getColumnIndexOrThrow(ReminderTable.KEY_LOCATION)));
+				mLocationText.setText(cursor.getString(cursor
+						.getColumnIndexOrThrow(ReminderTable.KEY_LOCATION)));
 
-			SimpleDateFormat dateTimeFormat = new SimpleDateFormat(
-					DATE_TIME_FORMAT);
-			Date date = null;
-			try {
-				String dateString = cursor.getString(cursor
-						.getColumnIndexOrThrow(ReminderTable.KEY_DATE_TIME));
-				date = dateTimeFormat.parse(dateString);
-				mCalendar.setTime(date);
-			} catch (ParseException e) {
-				Log.e("ReminderEditActivity", e.getMessage(), e);
+				SimpleDateFormat dateTimeFormat = new SimpleDateFormat(
+						DATE_TIME_FORMAT);
+				Date date = null;
+				try {
+					String dateString = cursor
+							.getString(cursor
+									.getColumnIndexOrThrow(ReminderTable.KEY_DATE_TIME));
+					date = dateTimeFormat.parse(dateString);
+					mCalendar.setTime(date);
+				} catch (ParseException e) {
+					Log.e("ReminderEditActivity", e.getMessage(), e);
+				}
+
+				// always close the cursor
+				cursor.close();
 			}
-
-			// always close the cursor
-			cursor.close();
+		} else {
+			// create a new reminder
+			SharedPreferences prefs = PreferenceManager
+					.getDefaultSharedPreferences(this);
+			String defaultTitleKey = getString(R.string.pref_lecture_title_key);
+			String defaultTimeKey = getString(R.string.pref_default_time_from_now_key);
+			String defaultTitle = prefs.getString(defaultTitleKey, "");
+			String defaultTime = prefs.getString(defaultTimeKey, "");
+			if ("".equals(defaultTitle) == false)
+				mTitleText.setText(defaultTitle);
+			if ("".equals(defaultTime) == false)
+				mCalendar.add(Calendar.MINUTE, Integer.parseInt(defaultTime));
 		}
 
 		updateDateButtonText();
@@ -235,9 +253,10 @@ public class ReminderEditActivity extends FragmentActivity implements
 			// Update reminder
 			getContentResolver().update(mReminderUri, values, null, null);
 		}
-		
+
 		String rowId = mReminderUri.getLastPathSegment();
-		new ReminderManager(this).setReminder(Long.parseLong(rowId) , (Calendar)mCalendar);
+		new ReminderManager(this).setReminder(Long.parseLong(rowId),
+				(Calendar) mCalendar);
 	}
 
 	@Override
